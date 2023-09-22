@@ -6,6 +6,6 @@ CREATE TABLE "packages" (
 CREATE TABLE "importNames" (
 	"id"	INTEGER UNIQUE,
 	"importName"	TEXT NOT NULL,
-	"packageName"	INTEGER NOT NULL,
+	"packageName"	TEXT NOT NULL,
 	PRIMARY KEY("id")
 );
