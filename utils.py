@@ -11,42 +11,52 @@ def get_db_connection():
     conn = sqlite3.connect('/home/kolby/Documents/GitHub/Mining-Diamonds-I-mean-data/diamonds.db')
     return conn
 
+def check_if_we_care(packageName):
+    try:
+        response = requests.get("https://libraries.io/api/Pypi/" + str(packageName.split("=")[0]) +"?api_key=96f6c6227c05020af5b777f5f6e0134c").json()
+        print(response)
+        if response["dependents_count"] > 0 and response["dependent_repos_count"] > 0:
+            return True, response["versions"]
+        return False, None
+    except Exception as e:
+        print("error: ", e)
+        return False, None
+
 
 def get_import_name(packageName):
-    def check_if_we_care(packageName):
-        try:
-            response = requests.get("https://libraries.io/api/Pypi/" + str(packageName.split("=")[0]) +"?api_key=96f6c6227c05020af5b777f5f6e0134c").json()
-            print(response)
-            if response["dependents_count"] > 0 and response["dependent_repos_count"] > 0:
-                return True
-            return False
-        except Exception as e:
-            print("error: ", e)
-            return False
+    if "==" in packageName:
+        return {"error": "Remove version allocator"}
 
     importNames = []
     conn = get_db_connection()
     cursor = conn.cursor()
     post = cursor.execute('SELECT * FROM packages WHERE package = ?', [packageName]).fetchone()
     if post is None:
-        if check_if_we_care(packageName):
-            importNames = JohnnyDist(packageName).import_names
-            if len(importNames) != 0:
-                posts = cursor.execute('INSERT INTO packages (package) VALUES (?);', [packageName]).fetchone()
-                for i in importNames:
-                    posts = cursor.execute('INSERT INTO importNames (importName, packageName) VALUES (?, ?);',
-                                           (i, packageName)).fetchone()
-                conn.commit()
-            else:
-                importNames = {"error": "Library you requested doesn't exist"}
+        do_we_care_boolean, versions_list = check_if_we_care(packageName)
+        if do_we_care_boolean:
+            posts = cursor.execute('INSERT INTO packages (package) VALUES (?);', [packageName]).fetchone()
+            for version in versions_list:
+                version = version["number"]
+                try:
+                    importNames = JohnnyDist(packageName + "==" + version).import_names
+                    if len(importNames) != 0:
+                        for i in importNames:
+                            posts = cursor.execute('INSERT INTO importNames (importName, packageName, version) VALUES (?, ?, ?);',
+                                                   (i, packageName, version)).fetchone()
+                        conn.commit()
+                    else:
+                        print("error Library you requested doesn't exist")
+                except Exception as e:
+                    cursor.execute('INSERT INTO crying_junk (package, version, reason) VALUES (?, ?, ?);',
+                                   (packageName, version, str(e))).fetchone()
+                    conn.commit()
+                    print("Error: python package: " + packageName + " failed on version: " + version + " error:", e)
         else:
             importNames = {"error": "Library you requested doesn't meet the requirements for our program to be considered a library"}
-    else:
-        bob = cursor.execute('SELECT * FROM importNames WHERE packageName = ?', (packageName,)).fetchall()
-        importNames = [i[1] for i in bob]
+    bob = cursor.execute('SELECT * FROM importNames WHERE packageName = ?', (packageName,)).fetchall()
+    importNames = [{"importName": i[1], "version": i[3]} for i in bob]
     conn.close()
     return importNames
-
 
 def get_list_of_pypi_packages():
     def get_yesterday_data():
@@ -77,5 +87,45 @@ def get_list_of_pypi_packages():
     for package_name in get_set_diff:
         get_import_name(package_name)
 
+
+def update_package_dataset():
+
+    importNames = []
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    packages = cursor.execute('SELECT package FROM packages').fetchall()
+
+    for package in packages:
+        package = package[0]
+        # todo: add support for updating the list
+        do_we_care_boolean, versions_list = check_if_we_care(package)
+        if do_we_care_boolean:
+            for version in reversed(versions_list):
+                version = version["number"]
+                bob = cursor.execute('SELECT * FROM importNames WHERE packageName = ? AND version = ?', [package, version]).fetchone()
+                if bob is None:
+                    try:
+                        importNames = JohnnyDist(package + "==" + version).import_names
+                        if len(importNames) != 0:
+                            for i in importNames:
+                                cursor.execute(
+                                    'INSERT INTO importNames (importName, packageName, version) VALUES (?, ?, ?);',
+                                    (i, package, version)).fetchone()
+                            conn.commit()
+                    except Exception as e:
+                        cursor.execute('INSERT INTO crying_junk (package, version, reason) VALUES (?, ?, ?);',
+                                       (package, version, str(e))).fetchone()
+                        conn.commit()
+                        print("Error: python package: " + package + " failed on version: " + version + " error:", e)
+                else:
+                    break
+        conn.close()
+
+
+# update_package_dataset()
+def run_every_day():
+    update_package_dataset()
+    get_list_of_pypi_packages()
 
 print(get_import_name("discord.py"))
