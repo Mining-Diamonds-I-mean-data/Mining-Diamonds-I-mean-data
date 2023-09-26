@@ -29,7 +29,7 @@ def import_to_package():
     conn = get_db_connection()
     cursor = conn.cursor()
     bob = cursor.execute('SELECT * FROM importNames WHERE importName = ?', [importName]).fetchall()
-    packageNames = [i[2] for i in bob]
+    packageNames = [{"packageName": i[2], "version": i[3]} for i in bob]
     conn.close()
     response = app.response_class(
         response=json.dumps(packageNames),
