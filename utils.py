@@ -8,7 +8,7 @@ import pickle
 # https://pypi.org/simple/
 
 def get_db_connection():
-    conn = sqlite3.connect('/home/kolby/Documents/GitHub/Mining-Diamonds-I-mean-data/diamonds.db')
+    conn = sqlite3.connect('/home/kolby/Documents/GitHub/Mining-Diamonds-I-mean-data/identifier.sqlite')
     return conn
 
 def check_if_we_care(packageName):
@@ -128,4 +128,4 @@ def run_every_day():
     update_package_dataset()
     get_list_of_pypi_packages()
 
-print(get_import_name("discord.py"))
+# print(get_import_name("discord.py"))
