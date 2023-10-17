@@ -4,17 +4,16 @@ import requests
 from bs4 import BeautifulSoup
 import pickle
 
-
+# Function that gets database connection
 def get_db_connection():
-    conn = sqlite3.connect('/home/kolby/Documents/GitHub/Mining-Diamonds-I-mean-data/identifier.sqlite')
+    conn = sqlite3.connect('/home/kolby/Documents/GitHub/Python-Import-Index/diamonds.db')
     return conn
 
-
+# check if package fits within criteria and if it does return the versions to process
 def check_if_we_care(packageName):
     try:
         response = requests.get("https://libraries.io/api/Pypi/" + str(
             packageName.split("=")[0]) + "?api_key=96f6c6227c05020af5b777f5f6e0134c").json()
-        print(response)
         if response["dependents_count"] > 0 and response["dependent_repos_count"] > 0:
             return True, response["versions"]
         return False, None
@@ -22,7 +21,7 @@ def check_if_we_care(packageName):
         print("error: ", e)
         return False, None
 
-
+# process package
 def get_import_name(packageName):
     if "==" in packageName:
         return {"error": "Remove version allocator"}
@@ -32,6 +31,8 @@ def get_import_name(packageName):
     cursor = conn.cursor()
     does_the_table_contain_this_package = cursor.execute('SELECT * FROM packages WHERE package = ?',
                                                          [packageName]).fetchone()
+
+    print("hi", does_the_table_contain_this_package)
     if does_the_table_contain_this_package is None:
         do_we_care_boolean, versions_list = check_if_we_care(packageName)
         if do_we_care_boolean:
@@ -55,6 +56,7 @@ def get_import_name(packageName):
                     print("Error: python package: " + packageName + " failed on version: " + version + " error:", e)
     conn.close()
 
+# gets a list of pypi packages we didn't process today and processes them
 
 def get_list_of_pypi_packages():
     def get_yesterday_data():
@@ -85,7 +87,7 @@ def get_list_of_pypi_packages():
     for package_name in get_set_diff:
         get_import_name(package_name)
 
-
+# update package dataset with new versions
 def update_package_dataset():
     importNames = []
     conn = get_db_connection()
@@ -99,9 +101,9 @@ def update_package_dataset():
         if do_we_care_boolean:
             for version in reversed(versions_list):
                 version = version["number"]
-                bob = cursor.execute('SELECT * FROM importNames WHERE packageName = ? AND version = ?',
+                found_result = cursor.execute('SELECT * FROM importNames WHERE packageName = ? AND version = ?',
                                      [package, version]).fetchone()
-                if bob is None:
+                if found_result is None:
                     try:
                         importNames = JohnnyDist(package + "==" + version).import_names
                         if len(importNames) != 0:
@@ -117,12 +119,10 @@ def update_package_dataset():
                         print("Error: python package: " + package + " failed on version: " + version + " error:", e)
                 else:
                     break
-        conn.close()
+    conn.close()
 
 
-# update_package_dataset()
+# run this every day to keep
 def run_every_day():
     update_package_dataset()
     get_list_of_pypi_packages()
-
-# print(get_import_name("discord.py"))
