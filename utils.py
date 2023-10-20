@@ -71,6 +71,7 @@ def get_import_name(package_name, api_key):
         print("hi", does_the_table_contain_this_package)
         if does_the_table_contain_this_package is None:
             cursor.execute('INSERT INTO packages (package) VALUES (%s);', (package_name,))
+            conn.commit()
             for version in versions_list:
                 try:
                     import_names = JohnnyDist(package_name + "==" + version).import_names
