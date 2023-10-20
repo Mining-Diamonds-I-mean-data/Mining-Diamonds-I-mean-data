@@ -1,3 +1,4 @@
+import itertools
 import os
 import random
 
@@ -40,11 +41,13 @@ def collect_representative_versions(lib_versions: Iterable[str]):
     versions_to_keep.sort()
     return versions_to_keep
 
+round_robin = itertools.cycle(api_keys)
+
 # check if package fits within criteria and if it does return the versions to process
 def check_if_we_care(package_name):
     try:
         response = requests.get("https://libraries.io/api/Pypi/" + str(
-            package_name.split("=")[0]) + "?api_key=" + random.choice(api_keys)).json()
+            package_name.split("=")[0]) + "?api_key=" + round_robin.__next__()).json()
         if response["dependents_count"] > 0 and response["dependent_repos_count"] > 0:
             return True, collect_representative_versions([version["number"] for version in response["versions"]])
         return False, None
