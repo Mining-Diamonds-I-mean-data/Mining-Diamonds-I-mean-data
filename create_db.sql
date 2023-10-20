@@ -1,19 +1,16 @@
 CREATE TABLE "packages" (
-	"id"	INTEGER UNIQUE,
+	"id"	SERIAL PRIMARY KEY,
 	"package"	TEXT NOT NULL UNIQUE,
-	PRIMARY KEY("id")
 );
 CREATE TABLE "importNames" (
-	"id"	INTEGER UNIQUE,
+	"id"	SERIAL PRIMARY KEY,
 	"importName"	TEXT NOT NULL,
 	"packageName"	TEXT NOT NULL,
 	"version"	TEXT NOT NULL,
-	PRIMARY KEY("id")
 );
 CREATE TABLE "failed_libraries" (
-	"id"	INTEGER UNIQUE,
+	"id"	SERIAL PRIMARY KEY,
 	"package"	TEXT NOT NULL,
 	"version"	TEXT NOT NULL,
 	"reason"	TEXT NOT NULL,
-	PRIMARY KEY("id")
 );
