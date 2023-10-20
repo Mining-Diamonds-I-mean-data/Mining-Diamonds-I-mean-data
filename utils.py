@@ -61,13 +61,13 @@ def get_import_name(packageName):
     conn = get_db_connection()
     cursor = conn.cursor()
     does_the_table_contain_this_package = cursor.execute('SELECT * FROM packages WHERE package = %s',
-                                                         (packageName)).fetchone()
+                                                         (packageName,)).fetchone()
 
     print("hi", does_the_table_contain_this_package)
     if does_the_table_contain_this_package is None:
         do_we_care_boolean, versions_list = check_if_we_care(packageName)
         if do_we_care_boolean:
-            cursor.execute('INSERT INTO packages (package) VALUES (%s);', (packageName)).fetchone()
+            cursor.execute('INSERT INTO packages (package) VALUES (%s);', (packageName,)).fetchone()
             for version in versions_list:
                 try:
                     importNames = JohnnyDist(packageName + "==" + version).import_names
@@ -75,13 +75,13 @@ def get_import_name(packageName):
                         for i in importNames:
                             cursor.execute(
                                 'INSERT INTO importNames (importName, packageName, version) VALUES (%s, %s, %s);',
-                                (i, packageName, version)).fetchone()
+                                (i, packageName, version,)).fetchone()
                         conn.commit()
                     else:
                         print("error Library you requested doesn't exist")
                 except Exception as e:
                     cursor.execute('INSERT INTO failed_libraries (package, version, reason) VALUES (%s, %s, %s);',
-                                   (packageName, version, str(e))).fetchone()
+                                   (packageName, version, str(e),)).fetchone()
                     conn.commit()
                     print("Error: python package: " + packageName + " failed on version: " + version + " error:", e)
     conn.close()
@@ -130,7 +130,7 @@ def update_package_dataset():
         if do_we_care_boolean:
             for version in reversed(versions_list):
                 found_result = cursor.execute('SELECT * FROM importNames WHERE packageName = %s AND version = %s',
-                                     (package, version)).fetchone()
+                                     (package, version,)).fetchone()
                 if found_result is None:
                     try:
                         importNames = JohnnyDist(package + "==" + version).import_names
@@ -138,11 +138,11 @@ def update_package_dataset():
                             for i in importNames:
                                 cursor.execute(
                                     'INSERT INTO importNames (importName, packageName, version) VALUES (%s, %s, %s);',
-                                    (i, package, version)).fetchone()
+                                    (i, package, version,)).fetchone()
                             conn.commit()
                     except Exception as e:
                         cursor.execute('INSERT INTO failed_libraries (package, version, reason) VALUES (%s, %s, %s);',
-                                       (package, version, str(e))).fetchone()
+                                       (package, version, str(e),)).fetchone()
                         conn.commit()
                         print("Error: python package: " + package + " failed on version: " + version + " error:", e)
                 else:
