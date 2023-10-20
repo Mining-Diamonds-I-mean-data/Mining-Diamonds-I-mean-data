@@ -1,6 +1,4 @@
-import sqlite3
 from flask import Flask, json, request
-from johnnydep import JohnnyDist
 from utils import *
 
 app = Flask(__name__)
@@ -23,16 +21,21 @@ def package_to_import(packages):
         package_name = package[0]
         package_version = ""
 
-        does_the_table_contain_this_package = cursor.execute('SELECT * FROM packages WHERE package = ?', [package_name]).fetchone()
+        does_the_table_contain_this_package = cursor.execute('SELECT * FROM packages WHERE package = ?',
+                                                             [package_name]).fetchone()
         if does_the_table_contain_this_package is None:
-            packages_json_list["error"].append(package_name + " OptionalVersion(" + package_version +") isn't include in the dataset")
+            packages_json_list["error"].append(
+                package_name + " OptionalVersion(" + package_version + ") isn't include in the dataset")
         else:
             if len(package) > 1:
                 package_version = package[1]
-                found_package = cursor.execute('SELECT * FROM importNames WHERE packageName = ? AND version = ?', (package_name, package_version, )).fetchall()
+                found_package = cursor.execute('SELECT * FROM importNames WHERE packageName = ? AND version = ?',
+                                               (package_name, package_version,)).fetchall()
             else:
-                found_package = cursor.execute('SELECT * FROM importNames WHERE packageName = ?', (package_name,)).fetchall()
-            packages_json_list["result"].extend([{"import_name": i[1], "library_name": i[2], "version": i[3]} for i in found_package])
+                found_package = cursor.execute('SELECT * FROM importNames WHERE packageName = ?',
+                                               (package_name,)).fetchall()
+            packages_json_list["result"].extend(
+                [{"import_name": i[1], "library_name": i[2], "version": i[3]} for i in found_package])
     conn.close()
 
     response = app.response_class(
@@ -51,14 +54,18 @@ def import_to_package(imports):
     imports_json_list = {"result": [], "error": []}
     for import_name in imports.split(','):
         if ':' in import_name:
-            imports_json_list["error"].append("The import name provided: " + import_name + " contains a ':' which is invalid")
+            imports_json_list["error"].append(
+                "The import name provided: " + import_name + " contains a ':' which is invalid")
             continue
 
-        does_the_table_contain_this_import = cursor.execute('SELECT * FROM importNames WHERE importName = ?', [import_name]).fetchall()
+        does_the_table_contain_this_import = cursor.execute('SELECT * FROM importNames WHERE importName = ?',
+                                                            [import_name]).fetchall()
         if does_the_table_contain_this_import is None:
-            imports_json_list["error"].append("The import name provided: " + import_name + " isn't contained in our database")
+            imports_json_list["error"].append(
+                "The import name provided: " + import_name + " isn't contained in our database")
         else:
-            imports_json_list["result"].extend([{"import_name": i[1], "library_name": i[2], "version": i[3]} for i in does_the_table_contain_this_import])
+            imports_json_list["result"].extend([{"import_name": i[1], "library_name": i[2], "version": i[3]} for i in
+                                                does_the_table_contain_this_import])
     conn.close()
 
     response = app.response_class(
