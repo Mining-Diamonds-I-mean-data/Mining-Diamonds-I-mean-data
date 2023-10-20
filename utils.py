@@ -1,13 +1,42 @@
-import sqlite3
+import os
+
+import psycopg2
+from typing import Iterable
+
 from johnnydep import JohnnyDist
 import requests
 from bs4 import BeautifulSoup
 import pickle
 
+database_password = os.environ.get("DATABASE_PASSWORD", "wrong password pale")
+if database_password == "wrong password pale":
+    raise NameError("You forgot to set the environment variable with a passwork 'export DATABASE_PASSWORD=abc123'")
+
+
 # Function that gets database connection
 def get_db_connection():
-    conn = sqlite3.connect('/home/kolby/Documents/GitHub/Python-Import-Index/diamonds.db')
+    conn = psycopg2.connect(database="db_name",
+                        host="localhost",
+                        user="postgres",
+                        password=database_password,
+                        port="5432")
     return conn
+
+def collect_representative_versions(lib_versions: Iterable[str]):
+    minors = set()
+    versions_to_keep = set()
+    for version in lib_versions:
+        version_split = version.split(".")
+        minor = version_split[0]
+        if len(version_split) > 1:
+            minor += ("." + version_split[1])
+        if minor not in minors:
+            minors.add(minor)
+            versions_to_keep.add(version)
+            continue
+    versions_to_keep = list(versions_to_keep)
+    versions_to_keep.sort()
+    return versions_to_keep
 
 # check if package fits within criteria and if it does return the versions to process
 def check_if_we_care(packageName):
@@ -15,7 +44,7 @@ def check_if_we_care(packageName):
         response = requests.get("https://libraries.io/api/Pypi/" + str(
             packageName.split("=")[0]) + "?api_key=96f6c6227c05020af5b777f5f6e0134c").json()
         if response["dependents_count"] > 0 and response["dependent_repos_count"] > 0:
-            return True, response["versions"]
+            return True, collect_representative_versions([version["number"] for version in response["versions"]])
         return False, None
     except Exception as e:
         print("error: ", e)
@@ -38,7 +67,6 @@ def get_import_name(packageName):
         if do_we_care_boolean:
             cursor.execute('INSERT INTO packages (package) VALUES (?);', [packageName]).fetchone()
             for version in versions_list:
-                version = version["number"]
                 try:
                     importNames = JohnnyDist(packageName + "==" + version).import_names
                     if len(importNames) != 0:
@@ -100,7 +128,6 @@ def update_package_dataset():
         do_we_care_boolean, versions_list = check_if_we_care(package)
         if do_we_care_boolean:
             for version in reversed(versions_list):
-                version = version["number"]
                 found_result = cursor.execute('SELECT * FROM importNames WHERE packageName = ? AND version = ?',
                                      [package, version]).fetchone()
                 if found_result is None:
