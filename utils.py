@@ -44,17 +44,17 @@ def collect_representative_versions(lib_versions: Iterable[str]):
 # check if package fits within criteria and if it does return the versions to process
 def check_if_we_care(package_name, api_key):
     response_raw = ""
+    url = "https://libraries.io/api/Pypi/" + str(package_name.split("=")[0]) + "?api_key=" + api_key
     try:
         # sleep 1 second just to be safe
         sleep(1)
-        response_raw = requests.get("https://libraries.io/api/Pypi/" + str(package_name.split("=")[0]) + "?api_key=" + api_key)
-        print("https://libraries.io/api/Pypi/" + str(package_name.split("=")[0]) + "?api_key=" + api_key)
+        response_raw = requests.get(url)
         response = response_raw.json()
         if response["dependents_count"] > 0 and response["dependent_repos_count"] > 0:
             return True, collect_representative_versions([version["number"] for version in response["versions"]])
         return False, None
     except Exception as e:
-        print("(fn)", check_if_we_care.__name__, "error: ", e, "|", response_raw.text)
+        print("(fn)", check_if_we_care.__name__, "error: ", e, "|", response_raw.text, "|", url)
         return False, None
 
 # process package
