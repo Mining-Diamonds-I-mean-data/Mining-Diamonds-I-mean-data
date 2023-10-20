@@ -33,8 +33,9 @@ cpu_count = min(int(multiprocessing.cpu_count()), len(api_keys))
 tp = ThreadPool(cpu_count)
 list_of_packages = get_list_of_pypi_packages()
 list_of_package_total = len(list_of_packages)
-for sample in progressBar(list_of_packages, prefix = 'Progress:', suffix = 'Complete', length = 100, printEnd="\n"):
+for index, sample in enumerate(list_of_packages):
     tp.apply_async(work, (sample, round_robin.__next__(),))
+    print(f"{bcolors.OKGREEN}Progress:{bcolors.ENDC}", str(index) + "/" + str(list_of_package_total))
 
 tp.close()
 tp.join()
