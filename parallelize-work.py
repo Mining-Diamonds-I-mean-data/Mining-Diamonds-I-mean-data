@@ -12,7 +12,7 @@ def work(sample):
         myline = my_tool_subprocess.stdout.readline()
 
 # we are using half CPU threads
-tp = ThreadPool(multiprocessing.cpu_count() / 2)
+tp = ThreadPool(int(multiprocessing.cpu_count() / 2))
 for sample in get_list_of_pypi_packages():
     tp.apply_async(work, (sample,))
 
