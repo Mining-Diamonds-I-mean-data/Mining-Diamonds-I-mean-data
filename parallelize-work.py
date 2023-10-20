@@ -4,7 +4,7 @@ from multiprocessing.pool import ThreadPool
 import subprocess
 from api_keys import api_keys
 
-from utils import get_list_of_pypi_packages
+from utils import get_list_of_pypi_packages, progressBar
 
 round_robin = itertools.cycle(api_keys)
 
@@ -21,15 +21,19 @@ class bcolors:
 
 def work(sample, api_key):
     print(f"{bcolors.OKCYAN}Collecting data for:{bcolors.ENDC}", sample, f"{bcolors.FAIL} api key using:{bcolors.ENDC}", api_key)
-    my_tool_subprocess = subprocess.Popen('python3 parallelized-worker.py {} {}'.format(sample, api_key), shell=True, stdout=subprocess.PIPE)
-    my_tool_subprocess.wait()
-    my_tool_subprocess.kill()
+    try:
+        my_tool_subprocess = subprocess.check_call(['python3', 'parallelized-worker.py', 'sample', 'api_key'])
+        print(f"{bcolors.OKBLUE}Done Collecting data for:{bcolors.ENDC}", sample, f"{bcolors.OKGREEN} Success{bcolors.ENDC}", my_tool_subprocess)
+    except subprocess.CalledProcessError as e:
+        print(f"{bcolors.OKBLUE}Done Collecting data for:{bcolors.ENDC}", sample,f"{bcolors.WARNING} Failed{bcolors.ENDC}", e)
 
 # we are using half CPU threads
 # cpu_count = int(multiprocessing.cpu_count() / 2)
 cpu_count = min(int(multiprocessing.cpu_count()), len(api_keys))
 tp = ThreadPool(cpu_count)
-for sample in get_list_of_pypi_packages():
+list_of_packages = get_list_of_pypi_packages()
+list_of_package_total = len(list_of_packages)
+for sample in progressBar(list_of_packages, prefix = 'Progress:', suffix = 'Complete', length = list_of_package_total):
     tp.apply_async(work, (sample, round_robin.__next__(),))
 
 tp.close()
