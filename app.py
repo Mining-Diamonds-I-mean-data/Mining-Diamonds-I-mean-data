@@ -21,19 +21,19 @@ def package_to_import(packages):
         package_name = package[0]
         package_version = ""
 
-        does_the_table_contain_this_package = cursor.execute('SELECT * FROM packages WHERE package = %s',
-                                                             (package_name,)).fetchone()
+        cursor.execute('SELECT * FROM packages WHERE package = %s', (package_name,))
+        does_the_table_contain_this_package = cursor.fetchone()
         if does_the_table_contain_this_package is None:
             packages_json_list["error"].append(
                 package_name + " OptionalVersion(" + package_version + ") isn't include in the dataset")
         else:
             if len(package) > 1:
                 package_version = package[1]
-                found_package = cursor.execute('SELECT * FROM importNames WHERE packageName = %s AND version = %s',
-                                               (package_name, package_version,)).fetchall()
+                cursor.execute('SELECT * FROM importNames WHERE packageName = %s AND version = %s', (package_name, package_version,))
+                found_package = cursor.fetchall()
             else:
-                found_package = cursor.execute('SELECT * FROM importNames WHERE packageName = %s',
-                                               (package_name,)).fetchall()
+                cursor.execute('SELECT * FROM importNames WHERE packageName = %s', (package_name,))
+                found_package = cursor.fetchall()
             packages_json_list["result"].extend(
                 [{"import_name": i[1], "library_name": i[2], "version": i[3]} for i in found_package])
     conn.close()
@@ -58,8 +58,8 @@ def import_to_package(imports):
                 "The import name provided: " + import_name + " contains a ':' which is invalid")
             continue
 
-        does_the_table_contain_this_import = cursor.execute('SELECT * FROM importNames WHERE importName = %s',
-                                                            (import_name,)).fetchall()
+        cursor.execute('SELECT * FROM importNames WHERE importName = %s', (import_name,))
+        does_the_table_contain_this_import = cursor.fetchall()
         if does_the_table_contain_this_import is None:
             imports_json_list["error"].append(
                 "The import name provided: " + import_name + " isn't contained in our database")
