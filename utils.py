@@ -18,7 +18,7 @@ if database_password == "wrong password pale":
 
 
 # Print iterations progress
-def progressBar(iterable, prefix = '', suffix = '', decimals = 1, length = 100, fill = '█', printEnd = "\r"):
+def progressBar(iterable, prefix = '', suffix = '', decimals = 1, length = 100, fill = '█', printEnd = "\n"):
     """
     Call in a loop to create terminal progress bar
     @params:
