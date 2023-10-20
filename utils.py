@@ -41,10 +41,10 @@ def collect_representative_versions(lib_versions: Iterable[str]):
     return versions_to_keep
 
 # check if package fits within criteria and if it does return the versions to process
-def check_if_we_care(packageName):
+def check_if_we_care(package_name):
     try:
         response = requests.get("https://libraries.io/api/Pypi/" + str(
-            packageName.split("=")[0]) + "?api_key=" + random.choice(api_keys)).json()
+            package_name.split("=")[0]) + "?api_key=" + random.choice(api_keys)).json()
         if response["dependents_count"] > 0 and response["dependent_repos_count"] > 0:
             return True, collect_representative_versions([version["number"] for version in response["versions"]])
         return False, None
@@ -53,37 +53,37 @@ def check_if_we_care(packageName):
         return False, None
 
 # process package
-def get_import_name(packageName):
-    if "==" in packageName:
+def get_import_name(package_name):
+    if "==" in package_name:
         return {"error": "Remove version allocator"}
 
     import_names = []
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('SELECT * FROM packages WHERE package = %s', (packageName,))
+    cursor.execute('SELECT * FROM packages WHERE package = %s', (package_name,))
     does_the_table_contain_this_package = cursor.fetchone()
 
     print("hi", does_the_table_contain_this_package)
     if does_the_table_contain_this_package is None:
-        do_we_care_boolean, versions_list = check_if_we_care(packageName)
+        do_we_care_boolean, versions_list = check_if_we_care(package_name)
         if do_we_care_boolean:
-            cursor.execute('INSERT INTO packages (package) VALUES (%s);', (packageName,))
+            cursor.execute('INSERT INTO packages (package) VALUES (%s);', (package_name,))
             for version in versions_list:
                 try:
-                    import_names = JohnnyDist(packageName + "==" + version).import_names
+                    import_names = JohnnyDist(package_name + "==" + version).import_names
                     if len(import_names) != 0:
                         for i in import_names:
                             cursor.execute(
-                                'INSERT INTO import_names (importName, packageName, version) VALUES (%s, %s, %s);',
-                                (i, packageName, version,))
+                                'INSERT INTO import_names (import_name, package_name, version) VALUES (%s, %s, %s);',
+                                (i, package_name, version,))
                         conn.commit()
                     else:
                         print("error Library you requested doesn't exist")
                 except Exception as e:
                     cursor.execute('INSERT INTO failed_libraries (package, version, reason) VALUES (%s, %s, %s);',
-                                   (packageName, version, str(e),))
+                                   (package_name, version, str(e),))
                     conn.commit()
-                    print("Error: python package: " + packageName + " failed on version: " + version + " error:", e)
+                    print("Error: python package: " + package_name + " failed on version: " + version + " error:", e)
     conn.close()
 
 # gets a list of pypi packages we didn't process today and processes them
@@ -130,7 +130,7 @@ def update_package_dataset():
         do_we_care_boolean, versions_list = check_if_we_care(package)
         if do_we_care_boolean:
             for version in reversed(versions_list):
-                cursor.execute('SELECT * FROM import_names WHERE packageName = %s AND version = %s',
+                cursor.execute('SELECT * FROM import_names WHERE package_name = %s AND version = %s',
                                      (package, version,))
                 found_result = cursor.fetchone()
                 if found_result is None:
@@ -139,7 +139,7 @@ def update_package_dataset():
                         if len(import_names) != 0:
                             for i in import_names:
                                 cursor.execute(
-                                    'INSERT INTO import_names (importName, packageName, version) VALUES (%s, %s, %s);',
+                                    'INSERT INTO import_names (import_name, package_name, version) VALUES (%s, %s, %s);',
                                     (i, package, version,))
                             conn.commit()
                     except Exception as e:
@@ -157,3 +157,7 @@ def run_every_day():
     update_package_dataset()
     for package_name in get_list_of_pypi_packages():
         get_import_name(package_name)
+
+if __name__ == '__main__':
+    # if you are running utils.py as a file this is to debug get_import_name
+    print(get_import_name("discord.py"))

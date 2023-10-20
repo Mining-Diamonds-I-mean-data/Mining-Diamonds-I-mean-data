@@ -4,8 +4,8 @@ CREATE TABLE "packages" (
 );
 CREATE TABLE "import_names" (
 	"id"	SERIAL PRIMARY KEY,
-	"importName"	TEXT NOT NULL,
-	"packageName"	TEXT NOT NULL,
+	"import_name"	TEXT NOT NULL,
+	"package_name"	TEXT NOT NULL,
 	"version"	TEXT NOT NULL
 );
 CREATE TABLE "failed_libraries" (

@@ -29,10 +29,10 @@ def package_to_import(packages):
         else:
             if len(package) > 1:
                 package_version = package[1]
-                cursor.execute('SELECT * FROM import_names WHERE packageName = %s AND version = %s', (package_name, package_version,))
+                cursor.execute('SELECT * FROM import_names WHERE package_name = %s AND version = %s', (package_name, package_version,))
                 found_package = cursor.fetchall()
             else:
-                cursor.execute('SELECT * FROM import_names WHERE packageName = %s', (package_name,))
+                cursor.execute('SELECT * FROM import_names WHERE package_name = %s', (package_name,))
                 found_package = cursor.fetchall()
             packages_json_list["result"].extend(
                 [{"import_name": i[1], "library_name": i[2], "version": i[3]} for i in found_package])
@@ -58,7 +58,7 @@ def import_to_package(imports):
                 "The import name provided: " + import_name + " contains a ':' which is invalid")
             continue
 
-        cursor.execute('SELECT * FROM import_names WHERE importName = %s', (import_name,))
+        cursor.execute('SELECT * FROM import_names WHERE import_name = %s', (import_name,))
         does_the_table_contain_this_import = cursor.fetchall()
         if does_the_table_contain_this_import is None:
             imports_json_list["error"].append(
