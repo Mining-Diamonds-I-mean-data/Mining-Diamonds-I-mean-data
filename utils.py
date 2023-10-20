@@ -48,6 +48,7 @@ def check_if_we_care(package_name, api_key):
         # sleep 1 second just to be safe
         sleep(1)
         response_raw = requests.get("https://libraries.io/api/Pypi/" + str(package_name.split("=")[0]) + "?api_key=" + api_key)
+        print("https://libraries.io/api/Pypi/" + str(package_name.split("=")[0]) + "?api_key=" + api_key)
         response = response_raw.json()
         if response["dependents_count"] > 0 and response["dependent_repos_count"] > 0:
             return True, collect_representative_versions([version["number"] for version in response["versions"]])
