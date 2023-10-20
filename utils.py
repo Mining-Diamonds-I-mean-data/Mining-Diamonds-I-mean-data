@@ -49,7 +49,7 @@ def check_if_we_care(packageName):
             return True, collect_representative_versions([version["number"] for version in response["versions"]])
         return False, None
     except Exception as e:
-        print("error: ", e)
+        print("(fn)", check_if_we_care.__name__, "error: ", e)
         return False, None
 
 # process package
@@ -57,7 +57,7 @@ def get_import_name(packageName):
     if "==" in packageName:
         return {"error": "Remove version allocator"}
 
-    importNames = []
+    import_names = []
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute('SELECT * FROM packages WHERE package = %s', (packageName,))
@@ -70,11 +70,11 @@ def get_import_name(packageName):
             cursor.execute('INSERT INTO packages (package) VALUES (%s);', (packageName,))
             for version in versions_list:
                 try:
-                    importNames = JohnnyDist(packageName + "==" + version).import_names
-                    if len(importNames) != 0:
-                        for i in importNames:
+                    import_names = JohnnyDist(packageName + "==" + version).import_names
+                    if len(import_names) != 0:
+                        for i in import_names:
                             cursor.execute(
-                                'INSERT INTO importNames (importName, packageName, version) VALUES (%s, %s, %s);',
+                                'INSERT INTO import_names (importName, packageName, version) VALUES (%s, %s, %s);',
                                 (i, packageName, version,))
                         conn.commit()
                     else:
@@ -118,7 +118,7 @@ def get_list_of_pypi_packages():
 
 # update package dataset with new versions
 def update_package_dataset():
-    importNames = []
+    import_names = []
     conn = get_db_connection()
     cursor = conn.cursor()
 
@@ -130,16 +130,16 @@ def update_package_dataset():
         do_we_care_boolean, versions_list = check_if_we_care(package)
         if do_we_care_boolean:
             for version in reversed(versions_list):
-                cursor.execute('SELECT * FROM importNames WHERE packageName = %s AND version = %s',
+                cursor.execute('SELECT * FROM import_names WHERE packageName = %s AND version = %s',
                                      (package, version,))
                 found_result = cursor.fetchone()
                 if found_result is None:
                     try:
-                        importNames = JohnnyDist(package + "==" + version).import_names
-                        if len(importNames) != 0:
-                            for i in importNames:
+                        import_names = JohnnyDist(package + "==" + version).import_names
+                        if len(import_names) != 0:
+                            for i in import_names:
                                 cursor.execute(
-                                    'INSERT INTO importNames (importName, packageName, version) VALUES (%s, %s, %s);',
+                                    'INSERT INTO import_names (importName, packageName, version) VALUES (%s, %s, %s);',
                                     (i, package, version,))
                             conn.commit()
                     except Exception as e:
