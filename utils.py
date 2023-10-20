@@ -60,17 +60,16 @@ def check_if_we_care(package_name, api_key):
 def get_import_name(package_name, api_key):
     if "==" in package_name:
         return {"error": "Remove version allocator"}
+    do_we_care_boolean, versions_list = check_if_we_care(package_name, api_key)
 
-    import_names = []
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute('SELECT * FROM packages WHERE package = %s', (package_name,))
-    does_the_table_contain_this_package = cursor.fetchone()
-
-    print("hi", does_the_table_contain_this_package)
-    if does_the_table_contain_this_package is None:
-        do_we_care_boolean, versions_list = check_if_we_care(package_name, api_key)
-        if do_we_care_boolean:
+    if do_we_care_boolean:
+        import_names = []
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute('SELECT * FROM packages WHERE package = %s', (package_name,))
+        does_the_table_contain_this_package = cursor.fetchone()
+        print("hi", does_the_table_contain_this_package)
+        if does_the_table_contain_this_package is None:
             cursor.execute('INSERT INTO packages (package) VALUES (%s);', (package_name,))
             for version in versions_list:
                 try:
@@ -88,7 +87,7 @@ def get_import_name(package_name, api_key):
                                    (package_name, version, str(e),))
                     conn.commit()
                     print("Error: python package: " + package_name + " failed on version: " + version + " error:", e)
-    conn.close()
+        conn.close()
 
 # gets a list of pypi packages we didn't process today and processes them
 

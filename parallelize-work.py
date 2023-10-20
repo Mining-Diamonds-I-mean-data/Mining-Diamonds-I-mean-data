@@ -25,6 +25,7 @@ def work(sample, api_key):
     line = False
     while line:
         myline = my_tool_subprocess.stdout.readline()
+    my_tool_subprocess.wait()
 
 # we are using half CPU threads
 # cpu_count = int(multiprocessing.cpu_count() / 2)
