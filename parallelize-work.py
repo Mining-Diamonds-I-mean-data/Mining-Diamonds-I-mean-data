@@ -4,7 +4,7 @@ from multiprocessing.pool import ThreadPool
 import subprocess
 from api_keys import api_keys
 
-from utils import get_list_of_pypi_packages, progressBar
+from utils import get_list_of_pypi_packages
 
 round_robin = itertools.cycle(api_keys)
 
