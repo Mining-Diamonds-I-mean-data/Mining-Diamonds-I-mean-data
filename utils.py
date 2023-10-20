@@ -41,13 +41,11 @@ def collect_representative_versions(lib_versions: Iterable[str]):
     versions_to_keep.sort()
     return versions_to_keep
 
-round_robin = itertools.cycle(api_keys)
-
 # check if package fits within criteria and if it does return the versions to process
-def check_if_we_care(package_name):
+def check_if_we_care(package_name, api_key):
     try:
         response = requests.get("https://libraries.io/api/Pypi/" + str(
-            package_name.split("=")[0]) + "?api_key=" + round_robin.__next__()).json()
+            package_name.split("=")[0]) + "?api_key=" + api_key).json()
         if response["dependents_count"] > 0 and response["dependent_repos_count"] > 0:
             return True, collect_representative_versions([version["number"] for version in response["versions"]])
         return False, None
@@ -56,7 +54,7 @@ def check_if_we_care(package_name):
         return False, None
 
 # process package
-def get_import_name(package_name):
+def get_import_name(package_name, api_key):
     if "==" in package_name:
         return {"error": "Remove version allocator"}
 
@@ -68,7 +66,7 @@ def get_import_name(package_name):
 
     print("hi", does_the_table_contain_this_package)
     if does_the_table_contain_this_package is None:
-        do_we_care_boolean, versions_list = check_if_we_care(package_name)
+        do_we_care_boolean, versions_list = check_if_we_care(package_name, api_key)
         if do_we_care_boolean:
             cursor.execute('INSERT INTO packages (package) VALUES (%s);', (package_name,))
             for version in versions_list:
@@ -127,10 +125,10 @@ def update_package_dataset():
 
     cursor.execute('SELECT package FROM packages')
     packages = cursor.fetchall()
-
+    round_robin = itertools.cycle(api_keys)
     for package in packages:
         package = package[0]
-        do_we_care_boolean, versions_list = check_if_we_care(package)
+        do_we_care_boolean, versions_list = check_if_we_care(package, round_robin.__next__())
         if do_we_care_boolean:
             for version in reversed(versions_list):
                 cursor.execute('SELECT * FROM import_names WHERE package_name = %s AND version = %s',
@@ -157,10 +155,12 @@ def update_package_dataset():
 
 # run this every day to keep
 def run_every_day():
+    round_robin = itertools.cycle(api_keys)
     update_package_dataset()
     for package_name in get_list_of_pypi_packages():
-        get_import_name(package_name)
+        get_import_name(package_name, round_robin.__next__())
 
 if __name__ == '__main__':
     # if you are running utils.py as a file this is to debug get_import_name
-    print(get_import_name("discord.py"))
+    round_robin = itertools.cycle(api_keys)
+    print(get_import_name("discord.py", round_robin.__next__()))
