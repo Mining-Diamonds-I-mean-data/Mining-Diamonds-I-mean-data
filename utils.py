@@ -1,4 +1,5 @@
 import os
+import random
 
 import psycopg2
 from typing import Iterable
@@ -7,6 +8,7 @@ from johnnydep import JohnnyDist
 import requests
 from bs4 import BeautifulSoup
 import pickle
+from api_keys import api_keys
 
 database_password = os.environ.get("DATABASE_PASSWORD", "wrong password pale")
 if database_password == "wrong password pale":
@@ -15,7 +17,7 @@ if database_password == "wrong password pale":
 
 # Function that gets database connection
 def get_db_connection():
-    conn = psycopg2.connect(database="db_name",
+    conn = psycopg2.connect(database="postgres",
                         host="localhost",
                         user="postgres",
                         password=database_password,
@@ -42,7 +44,7 @@ def collect_representative_versions(lib_versions: Iterable[str]):
 def check_if_we_care(packageName):
     try:
         response = requests.get("https://libraries.io/api/Pypi/" + str(
-            packageName.split("=")[0]) + "?api_key=96f6c6227c05020af5b777f5f6e0134c").json()
+            packageName.split("=")[0]) + "?api_key=" + random.choice(api_keys)).json()
         if response["dependents_count"] > 0 and response["dependent_repos_count"] > 0:
             return True, collect_representative_versions([version["number"] for version in response["versions"]])
         return False, None
@@ -78,7 +80,7 @@ def get_import_name(packageName):
                     else:
                         print("error Library you requested doesn't exist")
                 except Exception as e:
-                    cursor.execute('INSERT INTO crying_junk (package, version, reason) VALUES (?, ?, ?);',
+                    cursor.execute('INSERT INTO failed_libraries (package, version, reason) VALUES (?, ?, ?);',
                                    (packageName, version, str(e))).fetchone()
                     conn.commit()
                     print("Error: python package: " + packageName + " failed on version: " + version + " error:", e)
@@ -112,8 +114,7 @@ def get_list_of_pypi_packages():
     url_yesterday_set = get_yesterday_data()
     url_today_set = get_today_data()
     get_set_diff = url_today_set - url_yesterday_set
-    for package_name in get_set_diff:
-        get_import_name(package_name)
+    return get_set_diff
 
 # update package dataset with new versions
 def update_package_dataset():
@@ -140,7 +141,7 @@ def update_package_dataset():
                                     (i, package, version)).fetchone()
                             conn.commit()
                     except Exception as e:
-                        cursor.execute('INSERT INTO crying_junk (package, version, reason) VALUES (?, ?, ?);',
+                        cursor.execute('INSERT INTO failed_libraries (package, version, reason) VALUES (?, ?, ?);',
                                        (package, version, str(e))).fetchone()
                         conn.commit()
                         print("Error: python package: " + package + " failed on version: " + version + " error:", e)
@@ -152,4 +153,5 @@ def update_package_dataset():
 # run this every day to keep
 def run_every_day():
     update_package_dataset()
-    get_list_of_pypi_packages()
+    for package_name in get_list_of_pypi_packages():
+        get_import_name(package_name)

@@ -10,7 +10,7 @@ CREATE TABLE "importNames" (
 	"version"	TEXT NOT NULL,
 	PRIMARY KEY("id")
 );
-CREATE TABLE "crying_junk" (
+CREATE TABLE "failed_libraries" (
 	"id"	INTEGER UNIQUE,
 	"package"	TEXT NOT NULL,
 	"version"	TEXT NOT NULL,
