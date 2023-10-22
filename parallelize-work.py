@@ -75,6 +75,9 @@ mutex = Lock()
 
 def work(sample, index, list_of_package_total):
     global round_robin_global, mutex
+    # we are using a mutex on this and in next a round robin which limits an api key to be used 59 times a minute
+    # if the semiphore holds the mutex other threads will be blocked, but that is ok as at least we won't exceed the api
+    # rate limit
     with mutex:
         api_key = round_robin_global.__next__()
     print(f"{bcolors.OKCYAN}Collecting data for:{bcolors.ENDC}", sample, f"{bcolors.FAIL} api key using:{bcolors.ENDC}",
