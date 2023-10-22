@@ -20,7 +20,7 @@ class bcolors:
     UNDERLINE = '\033[4m'
 
 def work(sample, api_key, index, list_of_package_total):
-    print(f"{bcolors.OKCYAN}Collecting data for:{bcolors.ENDC}", sample, f"{bcolors.FAIL} api key using:{bcolors.ENDC}", api_key, f"{bcolors.OKGREEN}Progress:{bcolors.ENDC}", str(index) + "/" + str(list_of_package_total))
+    print(f"{bcolors.OKCYAN}Collecting data for:{bcolors.ENDC}", sample, f"{bcolors.FAIL} api key using:{bcolors.ENDC}", api_key, f"{bcolors.OKGREEN}Progress:{bcolors.ENDC}", '{:.2%} ({}/{})'.format(index / list_of_package_total, index, list_of_package_total))
     try:
         my_tool_subprocess = subprocess.check_call(['python3', 'parallelized-worker.py', sample, api_key])
         print(f"{bcolors.OKBLUE}Done Collecting data for:{bcolors.ENDC}", sample, f"{bcolors.OKGREEN} Success{bcolors.ENDC}", my_tool_subprocess)
