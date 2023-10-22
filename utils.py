@@ -46,8 +46,6 @@ def check_if_we_care(package_name, api_key):
     response_raw = ""
     url = "https://libraries.io/api/Pypi/" + str(package_name.split("=")[0]) + "?api_key=" + api_key
     try:
-        # sleep 1 second just to be safe
-        sleep(1)
         response_raw = requests.get(url)
         response = response_raw.json()
         if response["dependents_count"] > 0 and response["dependent_repos_count"] > 0:
