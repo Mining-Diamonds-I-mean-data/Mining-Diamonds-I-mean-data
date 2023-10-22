@@ -46,6 +46,7 @@ def check_if_we_care(package_name, api_key):
     response_raw = ""
     url = "https://libraries.io/api/Pypi/" + str(package_name.split("=")[0]) + "?api_key=" + api_key
     try:
+        # put a sleep here so using the semaphore is a last resort
         sleep(1)
         response_raw = requests.get(url)
         response = response_raw.json()
