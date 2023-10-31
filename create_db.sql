@@ -2,6 +2,10 @@ CREATE TABLE "packages" (
 	"id"	SERIAL PRIMARY KEY,
 	"package"	TEXT NOT NULL UNIQUE
 );
+CREATE TABLE "packages_not_picked" (
+	"id"	SERIAL PRIMARY KEY,
+	"package"	TEXT NOT NULL UNIQUE
+);
 CREATE TABLE "import_names" (
 	"id"	SERIAL PRIMARY KEY,
 	"import_name"	TEXT NOT NULL,

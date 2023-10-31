@@ -18,7 +18,7 @@ if database_password == "wrong password pale":
 
 # Function that gets database connection
 def get_db_connection():
-    conn = psycopg2.connect(database="postgres",
+    conn = psycopg2.connect(database="run2",
                         host="localhost",
                         user="postgres",
                         password=database_password,
@@ -55,7 +55,7 @@ def check_if_we_care(package_name, api_key):
         return False, None
     except Exception as e:
         print("(fn)", check_if_we_care.__name__, "error: ", e, "|", response_raw.text, "|", url)
-        return False, None
+        exit(2192)
 
 # process package
 def get_import_name(package_name, api_key):
@@ -64,7 +64,6 @@ def get_import_name(package_name, api_key):
     do_we_care_boolean, versions_list = check_if_we_care(package_name, api_key)
 
     if do_we_care_boolean:
-        import_names = []
         conn = get_db_connection()
         cursor = conn.cursor()
         cursor.execute('SELECT * FROM packages WHERE package = %s', (package_name,))
@@ -89,6 +88,9 @@ def get_import_name(package_name, api_key):
                                    (package_name, version, str(e),))
                     conn.commit()
                     print("Error: python package: " + package_name + " failed on version: " + version + " error:", e)
+        else:
+            cursor.execute('INSERT INTO packages_not_picked (package) VALUES (%s);', (package_name,))
+            conn.commit()
         conn.close()
 
 # gets a list of pypi packages we didn't process today and processes them
@@ -123,7 +125,6 @@ def get_list_of_pypi_packages():
 
 # update package dataset with new versions
 def update_package_dataset():
-    import_names = []
     conn = get_db_connection()
     cursor = conn.cursor()
 
@@ -166,5 +167,11 @@ def run_every_day():
 
 if __name__ == '__main__':
     # if you are running utils.py as a file this is to debug get_import_name
-    round_robin = itertools.cycle(api_keys)
-    print(get_import_name("discord.py", round_robin.__next__()))
+    def get_today_data():
+        response = requests.get("https://pypi.org/simple/")
+        soup = BeautifulSoup(response.content, features="html.parser")
+        url_set = set()
+        for url in soup.find_all('a'):
+            url_set.add(url.text)
+        return url_set
+    print(len(get_today_data()))

@@ -40,7 +40,7 @@ class ApiKeyCycle:
         self.index = 0
         self.end = len(api_keys)
         for i in range(len(api_keys)):
-            self.semiphores.append(RatedSemaphore(value=59, period=60))
+            self.semiphores.append(RatedSemaphore(value=60, period=60))
 
     def __next__(self):
         with self.semiphores[self.index]:
@@ -71,7 +71,16 @@ def init_worker(rbg):
     global round_robin_global
     round_robin_global = rbg
 
+
 mutex = Lock()
+
+# we are using half CPU threads
+# cpu_count = int(multiprocessing.cpu_count() / 2)
+cpu_count = min(int(multiprocessing.cpu_count()), len(api_keys))
+tp = ThreadPool(cpu_count, initializer=init_worker, initargs=(round_robin,))
+list_of_packages = get_list_of_pypi_packages()
+list_of_package_total = len(list_of_packages)
+
 
 def work(sample, index, list_of_package_total):
     global round_robin_global, mutex
@@ -89,15 +98,12 @@ def work(sample, index, list_of_package_total):
               f"{bcolors.OKGREEN} Success{bcolors.ENDC}", my_tool_subprocess)
     except subprocess.CalledProcessError as e:
         print(f"{bcolors.OKBLUE}Done Collecting data for:{bcolors.ENDC}", sample,
-              f"{bcolors.WARNING} Failed{bcolors.ENDC}", e)
+              f"{bcolors.WARNING} Failed {bcolors.ENDC}", e)
+        if e == 2192:
+            print(f"{bcolors.OKBLUE}Re-adding to queue:{bcolors.ENDC}", sample)
+            tp.apply_async(work, (sample, index, list_of_package_total))
 
 
-# we are using half CPU threads
-# cpu_count = int(multiprocessing.cpu_count() / 2)
-cpu_count = min(int(multiprocessing.cpu_count()), len(api_keys))
-tp = ThreadPool(cpu_count, initializer=init_worker, initargs=(round_robin,))
-list_of_packages = get_list_of_pypi_packages()
-list_of_package_total = len(list_of_packages)
 for index, sample in enumerate(list_of_packages):
     tp.apply_async(work, (sample, index, list_of_package_total))
 
