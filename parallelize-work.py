@@ -99,7 +99,7 @@ def work(sample, index, list_of_package_total):
     except subprocess.CalledProcessError as e:
         print(f"{bcolors.OKBLUE}Done Collecting data for:{bcolors.ENDC}", sample,
               f"{bcolors.WARNING} Failed {bcolors.ENDC}", e)
-        if e == 2192:
+        if e == 144:
             print(f"{bcolors.OKBLUE}Re-adding to queue:{bcolors.ENDC}", sample)
             tp.apply_async(work, (sample, index, list_of_package_total))
 

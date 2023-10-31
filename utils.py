@@ -50,12 +50,15 @@ def check_if_we_care(package_name, api_key):
         sleep(1)
         response_raw = requests.get(url)
         response = response_raw.json()
+        if "error" in response and response["error"] == "not found":
+            print("(fn)", check_if_we_care.__name__, "This library doesn't exist", response_raw.text, "|", url)
+            exit(66)
         if response["dependents_count"] > 0 and response["dependent_repos_count"] > 0:
             return True, collect_representative_versions([version["number"] for version in response["versions"]])
         return False, None
     except Exception as e:
         print("(fn)", check_if_we_care.__name__, "error: ", e, "|", response_raw.text, "|", url)
-        exit(2192)
+        exit(144)
 
 # process package
 def get_import_name(package_name, api_key):
