@@ -1,4 +1,4 @@
 import sys
-from utils import get_import_name
+from utils import process_new_or_update_library
 
-get_import_name(sys.argv[1], sys.argv[2])
+process_new_or_update_library(sys.argv[1])

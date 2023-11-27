@@ -2,7 +2,7 @@ CREATE TABLE "packages" (
 	"id"	SERIAL PRIMARY KEY,
 	"package"	TEXT NOT NULL UNIQUE
 );
-CREATE TABLE "packages_not_picked" (
+CREATE TABLE "package_does_not_exist_on_pypi" (
 	"id"	SERIAL PRIMARY KEY,
 	"package"	TEXT NOT NULL UNIQUE
 );

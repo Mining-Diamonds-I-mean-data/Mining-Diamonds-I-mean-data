@@ -1,12 +1,12 @@
-from flask import Flask, json, request
-from utils import *
+from flask import Flask, json, make_response
+from utils import get_db_connection
 
 app = Flask(__name__)
 
 
 @app.route('/')
 def hello_world():  # put application's code here
-    return 'Hello World!'
+    return 'Python Import Index read our ReadMe https://github.com/ualberta-smr/Python-Import-Index/blob/main/README.md'
 
 
 # http://127.0.0.1:5000/library/discord.py:0.11.0,setuptools
@@ -29,13 +29,14 @@ def package_to_import(packages):
         else:
             if len(package) > 1:
                 package_version = package[1]
-                cursor.execute('SELECT * FROM import_names WHERE package_name = %s AND version = %s', (package_name, package_version,))
+                cursor.execute('SELECT * FROM import_names WHERE package_name = %s AND version = %s',
+                               (package_name, package_version,))
                 found_package = cursor.fetchall()
             else:
                 cursor.execute('SELECT * FROM import_names WHERE package_name = %s', (package_name,))
                 found_package = cursor.fetchall()
             packages_json_list["result"].extend(
-                [{"import_name": i[1], "library_name": i[2], "version": i[3]} for i in found_package])
+                [{"library": i[2], "release": i[3], "import_name": i[1]} for i in found_package])
     conn.close()
 
     response = app.response_class(
@@ -64,7 +65,7 @@ def import_to_package(imports):
             imports_json_list["error"].append(
                 "The import name provided: " + import_name + " isn't contained in our database")
         else:
-            imports_json_list["result"].extend([{"import_name": i[1], "library_name": i[2], "version": i[3]} for i in
+            imports_json_list["result"].extend([{"library": i[2], "release": i[3], "import_name": i[1]} for i in
                                                 does_the_table_contain_this_import])
     conn.close()
 
@@ -73,6 +74,17 @@ def import_to_package(imports):
         mimetype='application/json'
     )
     return response
+
+
+@app.route('/dump')
+def dump():
+    with open('dump.csv', 'r') as fp:
+        dump_of_database = fp.read()
+
+    output = make_response(dump_of_database)
+    output.headers["Content-Disposition"] = "attachment; filename=export.csv"
+    output.headers["Content-type"] = "text/csv"
+    return output
 
 
 if __name__ == '__main__':
