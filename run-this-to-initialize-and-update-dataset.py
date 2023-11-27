@@ -32,12 +32,12 @@ def work(sample, index, list_of_package_total):
               f"{bcolors.OKGREEN} Success{bcolors.ENDC}", my_tool_subprocess)
     except subprocess.CalledProcessError as e:
         if e.returncode == 144:
-            print(f"{bcolors.OKBLUE}Failed requesting release Re-adding to queue:{bcolors.ENDC}", sample)
+            print(f"{bcolors.FAIL}Failed requesting release Re-adding to queue:{bcolors.ENDC}", sample)
             tp.apply_async(work, (sample, index, list_of_package_total))
         elif e.returncode == 66:
-            print(f"{bcolors.OKBLUE}Library doesn't exist on pypi removing from queue:{bcolors.ENDC}", sample)
+            print(f"{bcolors.FAIL}Library doesn't exist on pypi removing from queue:{bcolors.ENDC}", sample)
         else:
-            print(f"{bcolors.OKBLUE}Done Collecting data for:{bcolors.ENDC}", sample,
+            print(f"{bcolors.FAIL}Done Collecting data for:{bcolors.ENDC}", sample,
                   f"{bcolors.WARNING} Failed unknown reason {bcolors.ENDC}", e)
 
 
