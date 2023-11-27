@@ -120,7 +120,7 @@ def get_list_of_new_pypi_and_database_packages():
     conn.close()
     # combine pypi + database package list and remove pypi libraries which no longer exist to save time
     return list(
-        set(get_pypi_simple_package_list()) + set(packages_in_database) - set(packages_which_no_longer_exist_on_pypi))
+        set(get_pypi_simple_package_list()) | set(packages_in_database) - set(packages_which_no_longer_exist_on_pypi))
 
 
 def dump_database_csv():
