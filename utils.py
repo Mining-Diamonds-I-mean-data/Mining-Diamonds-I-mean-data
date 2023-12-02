@@ -12,19 +12,19 @@ if database_password == "wrong password friend":
 
 database = os.environ.get("POSTGRES_DATABASE", "wrong database friend")
 if database == "wrong database friend":
-    raise NameError("You forgot to set the environment variable with a database")
+    raise NameError("You forgot to set the environment variable with a database 'export POSTGRES_DATABASE=run3'")
 
 host = os.environ.get("POSTGRES_HOST", "wrong host friend")
 if host == "wrong host friend":
-    raise NameError("You forgot to set the environment variable with a host")
+    raise NameError("You forgot to set the environment variable with a host 'export POSTGRES_HOST=localhost'")
 
 user = os.environ.get("POSTGRES_USER", "wrong user")
 if user == "wrong user":
-    raise NameError("You forgot to set the environment variable with a user")
+    raise NameError("You forgot to set the environment variable with a user 'export POSTGRES_USER=postgres'")
 
 port = os.environ.get("POSTGRES_PORT", "wrong port friend")
 if port == "wrong port friend":
-    raise NameError("You forgot to set the environment variable with a port")
+    raise NameError("You forgot to set the environment variable with a port 'export POSTGRES_PORT=6969'")
 
 
 # Function that gets database connection

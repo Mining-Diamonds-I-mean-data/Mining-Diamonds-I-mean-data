@@ -8,6 +8,7 @@ Instructions for using the tools we created locally will be provided below, but 
 - [Requirements](#requirements)
 - [Setup Instructions Ubuntu](#setup-instructions-ubuntu)
 - [Initialize/Update dataset](#initializeupdate-dataset)
+- [Run with docker-compose](#run-with-docker-compose)
 - [Run Flask API Interface](#run-flask-api-interface)
 - [Examples of interacting with the Flask API Interface](#examples-of-interacting-with-the-flask-api-interface)
   - [Examples of /library/ api](#examples-of-library-api)
@@ -254,3 +255,8 @@ So you can enter ``http://127.0.0.1:5000/importname/discord,pkg_resources`` into
 ### Examples of /dump api
 If you want a csv dump of our database run ``http://127.0.0.1:5000/dump`` in your browser
 
+
+
+# Run with docker-compose
+Enter this into your terminal in the projects root directory ``docker compose up``
+Click this http://localhost:6969 and you should see our how page
