@@ -6,18 +6,34 @@ from johnnydep import JohnnyDist
 import requests
 from bs4 import BeautifulSoup
 
-database_password = os.environ.get("DATABASE_PASSWORD", "wrong password friend")
+database_password = os.environ.get("POSTGRES_PASSWORD", "wrong password friend")
 if database_password == "wrong password friend":
     raise NameError("You forgot to set the environment variable with a password 'export DATABASE_PASSWORD=abc123'")
+
+database = os.environ.get("POSTGRES_DATABASE", "wrong database friend")
+if database == "wrong database friend":
+    raise NameError("You forgot to set the environment variable with a database")
+
+host = os.environ.get("POSTGRES_HOST", "wrong host friend")
+if host == "wrong host friend":
+    raise NameError("You forgot to set the environment variable with a host")
+
+user = os.environ.get("POSTGRES_USER", "wrong user")
+if user == "wrong user":
+    raise NameError("You forgot to set the environment variable with a user")
+
+port = os.environ.get("POSTGRES_PORT", "wrong port friend")
+if port == "wrong port friend":
+    raise NameError("You forgot to set the environment variable with a port")
 
 
 # Function that gets database connection
 def get_db_connection():
-    conn = psycopg2.connect(database="postgres",
-                            host="localhost",
-                            user="postgres",
+    conn = psycopg2.connect(database=database,
+                            host=host,
+                            user=user,
                             password=database_password,
-                            port="5432")
+                            port=port)
     return conn
 
 
