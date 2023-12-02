@@ -6,7 +6,7 @@ app = Flask(__name__)
 
 @app.route('/')
 def hello_world():  # put application's code here
-    return 'Python Import Index read our ReadMe https://github.com/ualberta-smr/Python-Import-Index/blob/main/README.md'
+    return 'Python Import Index read our ReadMe https://github.com/ualberta-smr/Python-Import-Index/blob/main/README.md\n\n\n Made by Kolby Moroz Liebl and Marafi Mergani'
 
 
 # http://127.0.0.1:5000/library/discord.py:0.11.0,setuptools
