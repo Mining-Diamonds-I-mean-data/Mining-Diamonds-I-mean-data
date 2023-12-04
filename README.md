@@ -2,7 +2,7 @@
 
 This Undergraduate research project was done by [Kolby Moroz Liebl](https://github.com/KolbyML) and [Marafi Mergani](https://github.com/maraf-dev) with research department UAlberta Software Maintenance and Reuse (SMR) at the University of Alberta. Our supervisors were Mohayeminul Islam and Sarah Nadi
 
-Instructions for using the tools we created locally will be provided below, but instructions to deploy our "Flask API Interface" will not be provided
+Instructions for using the tools we created locally will be provided below and instructions to deploy our "Flask API Interface" using docker compose
 
 # Readme Index
 - [Python Import Index](#python-import-index)
