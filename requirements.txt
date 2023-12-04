@@ -24,3 +24,4 @@ toml==0.10.2
 urllib3==2.1.0
 Werkzeug==3.0.1
 wimpy==0.6
+markdown==3.5.1

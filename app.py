@@ -1,13 +1,16 @@
-from flask import Flask, json, make_response
+from flask import Flask, json, make_response, render_template
 from utils import get_db_connection
+import markdown
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='.')
 
 
 @app.route('/')
 def hello_world():  # put application's code here
-    return 'Python Import Index read our ReadMe https://github.com/ualberta-smr/Python-Import-Index/blob/main/README.md\n\n\n Made by Kolby Moroz Liebl and Marafi Mergani'
-
+    f = open('README.md', 'r')
+    markdownFile = f.read()
+    stringOfMarkdown = markdown.markdown(markdownFile, extensions=['markdown.extensions.toc', 'markdown.extensions.attr_list','markdown.extensions.codehilite','markdown.extensions.fenced_code'])
+    return render_template('index.html', stringOfMarkdown = stringOfMarkdown)
 
 # http://127.0.0.1:5000/library/discord.py:0.11.0,setuptools
 @app.route('/library/<string:packages>')
