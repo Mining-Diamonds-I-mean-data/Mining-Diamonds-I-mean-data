@@ -1,7 +1,7 @@
 version: "3.8"
 services:
   website:
-    image: python_index_website:latest
+    image: ghcr.io/ualberta-smr/python-import-index:latest
     container_name: python_index_website
     build:
       context: .
@@ -14,4 +14,5 @@ services:
       POSTGRES_DATABASE: postgres
     ports:
       - "6969:6969"
+    network_mode: "host"
     restart: always

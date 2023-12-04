@@ -5,15 +5,17 @@ This Undergraduate research project was done by Kolby Moroz Liebl and Marafi Mer
 Instructions for using the tools we created locally will be provided below, but instructions to deploy our "Flask API Interface" will not be provided
 
 # Readme Index
+- [Python Import Index](#python-import-index)
+- [Readme Index](#readme-index)
 - [Requirements](#requirements)
 - [Setup Instructions Ubuntu](#setup-instructions-ubuntu)
+- [Setup on SMR server using docker compose](#setup-on-smr-server-using-docker-compose)
 - [Initialize/Update dataset](#initializeupdate-dataset)
-- [Run with docker-compose](#run-with-docker-compose)
 - [Run Flask API Interface](#run-flask-api-interface)
 - [Examples of interacting with the Flask API Interface](#examples-of-interacting-with-the-flask-api-interface)
-  - [Examples of /library/ api](#examples-of-library-api)
-  - [Examples of /importname/ api](#examples-of-importname-api)
-  - [Examples of /dump api](#examples-of-dump-api)
+    - [Examples of /library/ api](#examples-of-library-api)
+    - [Examples of /importname/ api](#examples-of-importname-api)
+    - [Examples of /dump api](#examples-of-dump-api)
 
 # Requirements
 
@@ -46,6 +48,18 @@ Install project library requirements
 ```shell
 pip install -r requirements.txt
 ```
+
+# Setup on SMR server using docker compose
+```bash
+# git clone to any repo it doesn't matter
+git clone https://github.com/ualberta-smr/Python-Import-Index.git
+cd Python-Import-Index
+# edit enviroment variables for postgres
+nano docker-compose.yml
+# Run the app, running this will run the program on system reboot as well
+docker compose up -d --pull "always"
+```
+Click this http://localhost:6969 and you should see our how page
 
 # Initialize/Update dataset
 Run this script when you want to Initialize/Update the dataset. If you want to speed this process up you can configure the amount of python processes collecting the data in the file
@@ -254,9 +268,3 @@ So you can enter ``http://127.0.0.1:5000/importname/discord,pkg_resources`` into
 
 ### Examples of /dump api
 If you want a csv dump of our database run ``http://127.0.0.1:5000/dump`` in your browser
-
-
-
-# Run with docker-compose
-Enter this into your terminal in the projects root directory ``docker compose up``
-Click this http://localhost:6969 and you should see our how page
